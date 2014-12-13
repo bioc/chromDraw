@@ -1,0 +1,295 @@
+\documentclass[12pt]{article}
+%\documentclass[epsf]{siamltex}
+
+\setlength{\topmargin}{0in}
+\setlength{\topskip}{0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+%\setlength{\footheight}{0in}
+%\setlength{\footskip}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\baselineskip}{20pt}
+\setlength{\leftmargini}{1.5em}
+\setlength{\leftmarginii}{1.5em}
+\setlength{\leftmarginiii}{1.5em}
+\setlength{\leftmarginiv}{1.5em}
+
+\usepackage{epsfig,subfigure,lscape,natbib,verbatim}
+\usepackage[lined,ruled]{algorithm2e}
+\usepackage{color,listings}
+\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
+\definecolor{links}{rgb}{0.4,0.5,0}
+\definecolor{anchors}{rgb}{1,0,0}
+\def\AnchorColor{anchors}
+\def\LinkColor{links}
+\def\pdfBorderAttrs{/Border [0 0 0] }  % bez okraju kolem odkazu
+
+\renewcommand\theequation{\thesection.\arabic{equation}}
+
+\def\hb{\hfil\break}
+
+\def\ib{$\bullet$}
+
+ 
+\author{Jan Janecka} 
+%\VignetteIndexEntry{chromDraw}
+
+\begin{document}
+\pagestyle{plain}
+
+
+
+\nocite{Lysak28032006,Mandakova01072010,LibBoard,Rcpp2011,GenomicRanges,BiocInstaller,
+BiocCheck}
+
+\begin{center}
+{\bf Simple karyotypes visualization using {\tt chromDraw}}\\[5pt]
+Jan Janecka\\
+Research group Plant Cytogenomics\\
+CEITEC, Masaryk University of Brno 
+\end{center}
+
+\bigskip
+
+This document shows the use of the {\tt chromDraw} R package for 
+linear and circular type of karyotype visualization. The linear type of 
+visualization is usually used for demonstrating chromosomes structures in 
+karyotype and the circular type of visualization is used for comparing of  
+karyotypes between each other.
+
+Main functionality of {\tt chromDraw} was written in C++ language. BOARD 
+library \cite{LibBoard} was used for drawing graphic primitives. The integration 
+of R and C++ is made by Rcpp package \cite{Rcpp2011} and allows completely 
+hiding C++ implementation for R user. BiocCheck \cite{BiocCheck} and 
+BiocInstaller \cite{BiocInstaller} R packages were used during development of 
+package. In R is supported Genomic Ranges \cite{GenomicRanges} and data frame 
+as a input data and color data format.
+
+%//////////////////////////////////////////////////////////////////////////////
+\section{Data format}
+{\tt ChromDraw} has two own kinds of input files. The main input file contains 
+description of karyotype(s) for drawing and the second input file contains 
+description of colors.
+
+\subsection{The main input file}
+The main information about karyotype(s) is stored in this file. This input file 
+includes karyotype definition and definitions of each chromosome and blocks of 
+that karyotype. The file is in a plain text and is not case sensitive.
+
+\begin{itemize}
+\item{\bf{}Karyotype definition:\rm{}}\\
+The definition of whole karyotype is between two tags \sc{}karyotype begin\rm{} 
+and \sc{}karyotype end\rm{}. \sc{}Karyotype begin\rm{} requires karyotype 
+name and alias in this order. Alias must be unique for each karyotype.
+
+\item{\bf{}Chromosome definition:\rm{}}\\
+The key word for chromosome definition is \sc{}chr\rm{}, the chromosome 
+name, alias and chromosome range (defined by start and stop value) go after 
+this key word. All this chromosome information is mandatory and must follow 
+this given order. The chromosome alias must be unique for each chromosome in 
+the karyotype.
+
+\item{\bf{}Chromosome parts definitions:\rm{}}\\
+This part of file contains definitions of genomic blocks and centromeres. 
+Genomic block is defined by key word \sc{}block\rm{}, name, alias, chromosome 
+alias, start position, stop position and color. Block alias must be unique 
+in the karyotype. Chromosome alias is alias of chromosome, which contains this 
+block. Start and stop position is defined by the block position at the 
+chromosome. Color is a name of color in the second input file and it is 
+optional parameter. Centromere is defined by key word \sc{}centromere\rm{} and 
+alias of corresponding chromosome. It must follows block, which is directly 
+before centromere.
+\end{itemize}
+
+Comments can put in any part of the file, assigned by \# symbol at the 
+beginning of new line. Example of input data file:
+
+%See example of the input data file in attachment 
+%\ref{at:1}, which represents the original data of the {\tt Ancestral Crucifer 
+%Karyotype} \cite{Lysak28032006} and {\it Stenopetalum nutans}
+%\cite{Mandakova01072010}.
+
+\begin{lstlisting}
+  # Ancestral Crucifer Karyotype chromosome 1
+
+  # Karyotype definition
+  KARYOTYPE ACK ACK BEGIN
+
+  # Chromosome definition
+  CHR ACK1 al1 0 17000000
+  
+  # Genomic blocks definitions
+  BLOCK A A al1 0 6700000 yellow
+  BLOCK B B al1 6700000 12400000 yellow
+  # Centromere definition
+  CENTROMERE al1
+  BLOCK C C al1 12400000 17000000 yellow
+  
+  KARYOTYPE END
+
+\end{lstlisting}
+
+
+\subsection{The main input file using GenomicmRanges}
+This is the other way how is it possible to specified input data for {\tt 
+chromDraw}. In this case, it was used R specific data structure 
+GenomicRanges, but the idea of data structure is similar to definition 
+before. Each karyotype is defined by one GenomicRanges structure.
+
+Chromosomes are defined by same seqnames. Blocks are described by ranges and 
+chromosome names. Names of chromosomes are stored in array called name. When you 
+define centromere, insert to this array label {\sc CENTROMERE} and set the 
+ranges [0,0]. Colors of each blocks are defined  by string in array color. 
+There is some example of GenomicRandges input data, which contains the same 
+information like a example above:
+<<vignette.exampleData>>=
+library(GenomicRanges)
+
+exampleData <- GRanges(seqnames =Rle(c("ACK1"), c(4)),ranges = 
+IRanges(start = c(0, 6700000,0,12400000), 
+        end = c(6700000,12400000,0,17000000), 
+        names = c("A","B","CENTROMERE","C")),  
+        color = c("yellow","yellow","","yellow")
+       );
+
+exampleData;
+@
+
+\subsection{Colors}
+The color input file contains colors definitions in a plain text. Colors 
+are used for coloration of chromosomes blocks. Each color is defined by key 
+word \sc{}color\rm{}, name and red, green, blue (RGB) value. Name of each color 
+must be unique. RGB values are in range 0 to 255. You can also put comments in 
+any part of this file, assigned by \# symbol at the beginning of new line.
+Example of the color input file:
+
+\begin{lstlisting}
+  #Definition yellow color for AK1
+  COLOR yellow   255   255   0
+  COLOR red      255   255   0
+\end{lstlisting}
+
+\subsection{Colors using data frame}
+In R is supported other way, how define input colors. Structure of color is 
+similar, like was said above. In this case, it was used data frame for storing 
+colors.  Each colors are defined by name and RGB values, each item is defined 
+at separated vector. There is some example of data frame of colors, which 
+contains the same information like a example above:
+
+<<vignette.exampleColor>>=
+
+name <- c("yellow", "red");
+r <- c(255, 255);
+g <- c(255, 0);
+b <- c(0, 0);
+exampleColor <- data.frame(name,r,g,b);
+
+exampleColor;
+@
+
+%//////////////////////////////////////////////////////////////////////////////
+\section{Visualization}
+After preparation of all necessary input files, the using of 
+\tt{}chromDraw\rm{} is very simple. There are only two functions in 
+package \tt{}chromDraw\rm{}. First function has parameter structure just like 
+main function in C/C++. The first parameter is ARGC with number of strings in 
+ARGV. ARGV is a vector containing strings with arguments for program. First 
+string of this vector must be a package name. Here is an example, how to use 
+this package:
+
+<<vignette.chromDraw>>=
+library(chromDraw)
+
+OUTPUTPATH = file.path(getwd());
+
+INPUTPATH = system.file('extdata',
+                        'Ack_and_Stenopetalum_nutans.txt', 
+                        package ='chromDraw')
+                        
+COLORPATH = system.file('extdata',
+                        'default_colors.txt', 
+                        package ='chromDraw')
+                        
+chromDraw(argc=7,  
+          argv=c("chromDraw","-c",COLORPATH,"-d",INPUTPATH,"-o",
+OUTPUTPATH));
+@
+
+The second function supporting GenomicRanges, has two parameters. First 
+parameter is list of GenomicRanges structure per karyotype. The second one 
+is data frame of colors, this parameter is optional. Here is example of this 
+function, which is using examples of data:
+
+<<vignette.chromDrawGR>>=
+library(chromDraw)
+
+chromDrawGR(list(exampleData), exampleColor);
+@
+
+See example of the linear visualization output from {\tt chromDraw} in picture 
+\ref{fig:linear_Ack} and the circular type of visualization with 
+Ancestral Crucifer Karyotype \cite{Lysak28032006,Schranz2006535} and 
+\it{}Stenopetalum nutans\rm{} \cite{Mandakova01072010} in the second 
+\ref{fig:circular_Ack_Sn} picture. The second picture illustrates different 
+chromosome number and genomic blocks rearrangements between this two karyotypes.
+
+\begingroup
+  \begin{figure}[!h]
+    \centering
+    \includegraphics[width=10cm, height=8cm]{ACKlinear.png}
+    \caption{Linear visualization of Ancestral Crucifer Karyotype}
+    \label{fig:linear_Ack}
+  \end{figure}
+
+
+  \begin{figure}[!h]
+    \centering
+    \includegraphics[width=8cm, height=8cm]{circular.png}
+    \caption{Circular visualization of Ancestral Crucifer Karyotype and 
+  \it{}Stenopetalum nutans\rm{}}
+    \label{fig:circular_Ack_Sn}
+  \end{figure}
+\endgroup 
+
+
+\newpage
+%//////////////////////////////////////////////////////////////////////////////
+\section{Acknowledgements}
+I would like to thank to: M. A. Lysak  for constructive comments, Matej Lexa 
+for advices on bioinformatics and to Jiri Hon for introdution to R package 
+creating.
+\\
+{\it Funding}: Czech Science Foundation (P501/12/G090) and \\ 
+European Social Fund (CZ.1.07/2.3.00/20.0189)
+
+\newpage
+\appendix
+\begingroup
+  \bibliographystyle{plain}
+  \bibliography{chromDraw}
+\endgroup
+
+%\newpage
+%\begingroup
+%\section{Attachment}
+%  \subsection[\small]{Example of input data file - {\it{}Ancestral 
+%karyotype} and {\it{}Stenopetalum nutans}}\label{at:1}
+%    \fontsize{8pt}{8pt}\selectfont
+    %\verbatiminput{../inst/extdata/Ack_and_Stenopetalum_nutans.txt}
+%  \subsection{Example of color file}\label{at:2}
+%    \fontsize{8pt}{8pt}\selectfont
+%    \verbatiminput{../inst/extdata/default_colors.txt}
+%\endgroup      
+
+
+\end{document}
+         
+         
+
+   
+         
+         
+         

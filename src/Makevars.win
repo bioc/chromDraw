@@ -1,0 +1,30 @@
+##split sources to ensure the commands for linking are not too long!
+SOURCES1=$(wildcard ./libBoard/src/*.cpp)
+SOURCES2=$(wildcard ./chromDrawCPP/*.cpp)
+SOURCES3=$(wildcard ./*.cpp ./*.c)
+
+OBJECTS = chromDraw.o RcppExports.o
+OBJS1 = $(SOURCES1:.cpp=.o)
+OBJS2 = $(SOURCES2:.cpp=.o)
+OBJS3 = $(SOURCES3:.cpp=.o)
+
+PKG_CPPFLAGS = -I./libBoard/include -I./chromDrawCPP
+PKG_LIBS = libSn1.a libSn2.a libSn3.a
+
+
+all: libSn1.a libSn2.a libSn3.a $(SHLIB)
+
+$(SHLIB): libSn1.a libSn2.a libSn3.a $(OBJECTS)
+libSn1.a: $(OBJS1)
+libSn2.a: $(OBJS2)
+libSn3.a: $(OBJS3)
+
+
+clean:	
+				@rm -f $(SHLIB) 
+				@rm -f $(OBJECTS)
+				@rm -f $(OBJS1)
+				@rm -f $(OBJS2)
+				@rm -f $(OBJS3)
+				@rm -f $(PKG_LIBS)
+

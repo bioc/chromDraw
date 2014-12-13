@@ -1,0 +1,17 @@
+#colors by Terezie Mandakova
+#AK1
+COLOR yellow 	    255   255   0
+#AK2
+COLOR red 	      255   0 	  0
+#AK3
+COLOR blue 	      0 	  0 	  255
+#AK4
+COLOR violet 	    255   0 	  255
+#AK5
+COLOR orange 	    247   148	  29
+#AK6
+COLOR	green 	    0 	  255	  0
+#AK7
+COLOR light_blue 	0 	  255	  255
+#AK8
+COLOR	pink 	      230   170	  160 

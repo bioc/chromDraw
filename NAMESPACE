@@ -1,0 +1,10 @@
+useDynLib(chromDraw)
+
+import(GenomicRanges)
+
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+
+export(
+  chromDrawGR
+  )

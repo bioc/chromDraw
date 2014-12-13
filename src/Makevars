@@ -1,0 +1,17 @@
+SOURCES1=$(wildcard ./libBoard/src/*.cpp ./chromDrawCPP/*.cpp ./R_init_chromDraw.cpp)
+
+OBJECTS = chromDraw.o RcppExports.o $(SOURCES1:.cpp=.o)
+
+PKG_CPPFLAGS = -isystem ./libBoard/include -isystem ./chromDrawCPP
+
+
+all:  $(SHLIB)
+
+$(SHLIB): $(OBJECTS)
+
+
+
+clean:
+	@rm -f $(OBJECTS)
+	@rm -f ./libBoard/src/*.o
+
