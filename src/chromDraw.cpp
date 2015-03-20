@@ -88,7 +88,7 @@ int main_chromDraw(int argc, StringVector argv) {
   						return -1;
   				}
   	
-  				i->draw();
+  				i->draw(param->getUseScale());
   				i->saveImages(param->getOutputPath());
   
   				delete(i);
@@ -140,7 +140,7 @@ int main_chromDraw(int argc, StringVector argv) {
   				break;
   			case 305:
   				freeMemErr3xx(param, i);
-          stop("Chromosome element is allready exists.");
+          stop("Chromosome element already exists.");
   				break;
   			case 306:
   				freeMemErr3xx(param, i);

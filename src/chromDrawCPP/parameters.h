@@ -33,6 +33,7 @@ private:
 	string outputPath;	// path for saveing pictures
 	string colourPath;	// path to file with color setting
 	string inputMatrixPath;	//path to source file with matrix
+	bool useScale; // use same scale for linar visualization
 
 public:
 	int loadArguments(int argc, char* argv[]);
@@ -43,6 +44,8 @@ public:
 	string getColourPath();
 	void setInputMatrixPath(string path);
 	string getInputMatrixPath();
+	void setUseScale(bool value);
+	bool getUseScale();
 
 };
 

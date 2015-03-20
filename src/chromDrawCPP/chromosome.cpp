@@ -36,7 +36,14 @@ chromosome::~chromosome(void)
 */
 void chromosome::setName(string s)
 {
-	name = s;
+	if(s.compare(EMPTYSTRING) == 0)
+	{
+		name = "";
+	}
+	else
+	{
+		name = s;
+	}
 }
 
 /** 

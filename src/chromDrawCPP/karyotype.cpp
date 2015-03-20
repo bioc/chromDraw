@@ -386,7 +386,7 @@ void karyotype::draw(canvas *sheet, colorPalette palette, bool linear)
 	unsigned long int totalLenght = 0;
 	int centromereCount = 0;
 
-	// get karyotype lenght
+	// get karyotype lenght and other atributes
 	for(list<chromosome*>::iterator it=katype.begin(); it != katype.end(); it++)
 	{
 		if(maxLenght < (*it)->getChromosomLenght())
@@ -471,7 +471,34 @@ float karyotype::getMaxStringLenghtChrName()
 	return retVal;
 }
 
+/**
+* Get lenght of longest chromosome in karyotype
+* @return Lenght of longest chromosome
+*/
+int karyotype::getMaxChromosomeLenght()
+{
+	int maxLenght = 0;
 
+	for(list<chromosome*>::iterator itch=katype.begin(); itch != katype.end(); itch++)
+	{
+		if(maxLenght < (*itch)->getChromosomLenght())
+		{
+			maxLenght = (*itch)->getChromosomLenght();
+		}
+	}
+
+	return maxLenght;
+}
+
+
+/**
+* Get count of chromosomes in karyotype
+* @return Count of chromosomes
+*/
+int karyotype::getChromosomeCount()
+{
+	return katype.size();
+}
 
 //-----------------PRIVATE-------------------
 /**

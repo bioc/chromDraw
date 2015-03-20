@@ -17,6 +17,7 @@ parameters::parameters(void)
 	outputPath = "";
 	colourPath = "./inst/extdata/default_colors.txt";
 	inputMatrixPath = "";
+	useScale = false;
 }
 
 /**
@@ -35,7 +36,7 @@ parameters::~parameters(void)
 int parameters::loadArguments(int argc, char* argv[])
 {
 	char op_char;
-	char params[10] = "hocd";
+	char params[10] = "hocds";
 	getOpts* opts = new getOpts();
  
   
@@ -50,32 +51,35 @@ int parameters::loadArguments(int argc, char* argv[])
 					return 1;
 				break;
 			case 'o':
-        {
-          int Result = 0;
-          if(((string)argv[opts->getOptID()]).length() != 0)
-          {
-            #ifdef _WIN32 || _WIN64
-        	      struct _stat buf; 
-        	      Result = _stat( ((string)argv[opts->getOptID()]).c_str(), &buf);
-        	  #else
-        	      struct stat buf;
-        	      Result = stat(((string)argv[opts->getOptID()]).c_str(), &buf );
-        	  #endif
-        	}
+					{
+					  int Result = 0;
+					  if(((string)argv[opts->getOptID()]).length() != 0)
+					  {
+						#ifdef _WIN32 || _WIN64
+        					  struct _stat buf; 
+        					  Result = _stat( ((string)argv[opts->getOptID()]).c_str(), &buf);
+        				  #else
+        					  struct stat buf;
+        					  Result = stat(((string)argv[opts->getOptID()]).c_str(), &buf );
+        				  #endif
+        				}
   
-        	if(Result != 0)
-        	{
-        	  //output path does not exist.
-        	  throw(400);
-        	}
-					this->setOutputPath(argv[opts->getOptID()]);
-        }
+        				if(Result != 0)
+        				{
+        				  //output path does not exist.
+        				  throw(400);
+        				}
+								this->setOutputPath(argv[opts->getOptID()]);
+					}
 				break;
 			case 'c':
 					this->setColourPath(argv[opts->getOptID()]);
 				break;
 			case 'd':
 					this->setInputMatrixPath(argv[opts->getOptID()]);
+				break;
+			case 's':
+				this->setUseScale(true);
 				break;
 			default:
 					return 1;
@@ -99,6 +103,7 @@ void parameters::help()
 	cout << "-o	Path to output directory." << endl;
 	cout << "-d	Path to input file with chromosome matrix." << endl;
 	cout << "-c	File with path to color settings." << endl;
+	cout << "-s Use same scale for linear visualization" << endl;
 
 }
 
@@ -181,3 +186,20 @@ string parameters::getInputMatrixPath()
 	return inputMatrixPath;
 }
 
+/**
+* Set use scale for linear visualization
+* @param value True for use scale, False for do not use scale
+*/
+void parameters::setUseScale(bool value)
+{
+	useScale = value;
+}
+
+/**
+* Get use scale for linear visualization
+* @return True for use scale, False for do not use scale
+*/
+bool parameters::getUseScale()
+{
+	return useScale;
+}

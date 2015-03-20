@@ -67,6 +67,8 @@ class karyotype
 		void draw(canvas *sheet, colorPalette palette, bool linear);
 		int getMaxStringLenghtBlock();
 		float getMaxStringLenghtChrName();
+		int getMaxChromosomeLenght();
+		int getChromosomeCount();
 	
 	private:
 		void sortBlocks();

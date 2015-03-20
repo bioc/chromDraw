@@ -19,7 +19,7 @@
 
 \usepackage{epsfig,subfigure,lscape,natbib,verbatim}
 \usepackage[lined,ruled]{algorithm2e}
-\usepackage{color,listings}
+\usepackage{color,listings,verbatim}
 \usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
 \definecolor{links}{rgb}{0.4,0.5,0}
 \definecolor{anchors}{rgb}{1,0,0}
@@ -34,7 +34,7 @@
 \def\ib{$\bullet$}
 
  
-\author{Jan Janecka} 
+\author{Jan Jane\v{c}ka} 
 %\VignetteIndexEntry{chromDraw}
 
 \begin{document}
@@ -47,7 +47,7 @@ BiocCheck}
 
 \begin{center}
 {\bf Simple karyotypes visualization using {\tt chromDraw}}\\[5pt]
-Jan Janecka\\
+Jan Jane\v{c}ka\\
 Research group Plant Cytogenomics\\
 CEITEC, Masaryk University of Brno 
 \end{center}
@@ -105,7 +105,9 @@ before centromere.
 \end{itemize}
 
 Comments can put in any part of the file, assigned by \# symbol at the 
-beginning of new line. Example of input data file:
+beginning of new line. Attribute of name is represented two chars of quotation marks "" for print empty strings to output picture. 
+\\
+Example of input data file:
 
 %See example of the input data file in attachment 
 %\ref{at:1}, which represents the original data of the {\tt Ancestral Crucifer 
@@ -133,7 +135,7 @@ beginning of new line. Example of input data file:
 \end{lstlisting}
 
 
-\subsection{The main input file using GenomicmRanges}
+\subsection{The main input file using GenomicRanges}
 This is the other way how is it possible to specified input data for {\tt 
 chromDraw}. In this case, it was used R specific data structure 
 GenomicRanges, but the idea of data structure is similar to definition 
@@ -235,6 +237,7 @@ Ancestral Crucifer Karyotype \cite{Lysak28032006,Schranz2006535} and
 \it{}Stenopetalum nutans\rm{} \cite{Mandakova01072010} in the second 
 \ref{fig:circular_Ack_Sn} picture. The second picture illustrates different 
 chromosome number and genomic blocks rearrangements between this two karyotypes.
+Linear visualization has switcher -s to keep same scale of all chromosomes. If this switcher is used, then the linear pictures have retained the size ratio between all chromosomes in all karyotypes.
 
 \begingroup
   \begin{figure}[!h]
@@ -258,10 +261,11 @@ chromosome number and genomic blocks rearrangements between this two karyotypes.
 \newpage
 %//////////////////////////////////////////////////////////////////////////////
 \section{Acknowledgements}
-I would like to thank to: M. A. Lysak  for constructive comments, Matej Lexa 
-for advices on bioinformatics and to Jiri Hon for introdution to R package 
+I would like to thank to: M. A. Lysak  for constructive comments, Ma\v{t}ej Lexa 
+for advices on bioinformatics and to Ji\v{r}\'{i} Hon for introdution to R package 
 creating.
 \\
+\newline
 {\it Funding}: Czech Science Foundation (P501/12/G090) and \\ 
 European Social Fund (CZ.1.07/2.3.00/20.0189)
 

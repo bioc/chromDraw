@@ -47,7 +47,14 @@ chromosomeElement::EChromosomeElementType chromosomeElement::getElementType()
 */
 void chromosomeElement::setName(string s)
 {
-	name = s;
+	if(s.compare(EMPTYSTRING) == 0)
+	{
+		name = "";
+	}
+	else
+	{
+		name = s;
+	}
 }
 
 /**

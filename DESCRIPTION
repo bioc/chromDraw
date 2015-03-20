@@ -1,19 +1,20 @@
 Package: chromDraw
 Type: Package
-Title: chromDraw is a simple package for drawing simple karyotype(s) or
-        comparing karyotypes shemes.
-Version: 0.99.4
+Title: chromDraw an R package for visualization of linear and circular karyotypes.
+Version: 0.99.5
 Date: 2014-08-01
 Author: Jan Janecka, Ing., Mgr. CEITEC Masaryk University
 Maintainer: Jan Janecka <jan.janecka@ceitec.muni.cz>
 biocViews: Software
-Depends: R (>= 3.0.0)
+Depends:
+    R (>= 3.0.0)
 SystemRequirements: Rtools (>= 3.1)
-Description: chromDraw is a simple package for drawing simple
-        karyotype(s) or comparing karyotypes schemes (linear and
-        circular). This tool has own input data format. Each chromosome
-        containing definition of blocks and centromere position. Output
-        file formats are *.eps and *.svg.
-License: GPL-3
-Imports: Rcpp (>= 0.11.1), GenomicRanges (>= 1.17.46)
+Description: Package chromDraw is a simple package for linear and circular type
+of karyotype visualization. The linear type of visualization is usually used for demonstrating chromosomes structures in karyotype and the circular type of visualization is used for comparing of karyotypes between each other. This tool has own input data format or genomicRanges structure can be used as input. Each chromosome containing definition of blocks and centromere position.  Output file formats are *.eps and *.svg.
+License: GPL-3 
+Imports:
+    Rcpp (>= 0.11.1),
+    GenomicRanges (>= 1.17.46)
 LinkingTo: Rcpp
+URL: www.plantcytogenomics.org/chromDraw
+   

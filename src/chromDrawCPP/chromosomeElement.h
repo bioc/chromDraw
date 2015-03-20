@@ -16,6 +16,7 @@
 
 using namespace std;
 
+#define EMPTYSTRING "\"\""
 
 
 class chromosomeElement

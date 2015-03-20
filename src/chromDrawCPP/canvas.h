@@ -57,7 +57,7 @@ class canvas
 
 	private:
 		bool lin_initState;	// linear drawing was initialized
-		bool cir_initState;	// circular drawing vas initialized
+		bool cir_initState;	// circular drawing was initialized
 		string alias;	// alias name of canvas
 		float last_x;	// x coordinate of pen
 		float last_y; // y coordinate of pen

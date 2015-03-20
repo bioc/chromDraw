@@ -29,11 +29,29 @@ ideogram::~ideogram(void)
 /**
 * Method for draw all karyotepes to linear and circular pictures.
 */
-void ideogram::draw()
+void ideogram::draw(bool useScale)
 {
+// TODO efektivneji ziskavat hodnotu maximalni delky chromosomu pro jednotlive karyotypy, mozna ulozit pri nacitani dat. (privatni promenna)
+	int maxLenght = 0;
+
+	if(useScale)
+	{
+		for(list<karyotype*>::iterator itk = ideogram_p.begin(); itk != ideogram_p.end(); itk++)
+		{
+			if(maxLenght < (*itk)->getMaxChromosomeLenght())
+			{
+				maxLenght = (*itk)->getMaxChromosomeLenght();
+			}
+		}
+	}
+
 	for(list<karyotype*>::iterator it = ideogram_p.begin(); it != ideogram_p.end(); it++)
 	{
 		// linear draw
+		if(useScale)
+		{
+			getCanvas((*it)->getAlias())->lin_init(maxLenght, (*it)->getChromosomeCount());
+		}
 		(*it)->draw(getCanvas((*it)->getAlias()), palette, true);
 
 		// circular draw

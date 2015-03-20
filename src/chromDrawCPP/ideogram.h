@@ -42,7 +42,7 @@ class ideogram
 		ideogram(void);
 		~ideogram(void);
 
-		void draw();
+		void draw(bool useScale);
 		int loadMatrix(string path);
 		void pushKaryotype(karyotype *k);
 		void popKaryotype(string sAlias);
