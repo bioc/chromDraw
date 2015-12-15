@@ -74,14 +74,18 @@ int main_chromDraw(int argc, StringVector argv) {
   		if(0 == param->loadArguments(argc,&*charv.begin()))
   		{
   
-  				if(0 != i->loadColorPalette(param->getColourPath()))
-  				{
-  						delete(i);
-  						delete(param);
-  						return -1;
-  				}
+  				
+        if(param->getInputDataFormat().compare(DEFAULTDATAFORMAT) == 0)
+				{
+					if(0 != i->loadColorPalette(param->getColourPath()))
+  					{
+  							delete(i);
+  							delete(param);
+  							return -1;
+  					}	
+				}
   	
-  				if(0 != i->loadMatrix(param->getInputMatrixPath()))
+  				if(0 != i->loadMatrix(param->getInputMatrixPath(), param->getInputDataFormat()))
   				{
   						delete(i);
   						delete(param);
@@ -101,6 +105,11 @@ int main_chromDraw(int argc, StringVector argv) {
   		cout << "Error number: " << value << endl;
   		switch (value)
   		{
+        // load arguments
+    		case 100:
+  				freeMemErr2xx(param, i);
+    			stop("Unsupported input data format.");
+  				break;
   			// loading color palete errors
   			case 200:
           cout << param->getColourPath() << endl;
@@ -165,6 +174,14 @@ int main_chromDraw(int argc, StringVector argv) {
   			case 311:
   				freeMemErr3xx(param, i);
           stop("Incompatibile lenght of chromosome.");
+  				break;
+        case 312:
+    			freeMemErr3xx(param, i);
+				  stop("Bad count of lexems in line, who defined FISH.");
+  				break;
+			  case 313:
+  				freeMemErr3xx(param, i);
+				  stop("Mark already exists.");
   				break;
   
   			// drawing and saveing images

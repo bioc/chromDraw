@@ -30,12 +30,16 @@
 #define TO "TO"		// mapping to chromosome
 #define CENTROMERE "CENTROMERE"	// centromere
 #define COMMENT '#'	// comment
+#define MARK "MARK" // sign - mark
+#define RECTANGLE "RECTANGLE"	// rectangle shape of mark
+#define ELLIPSE "ELLIPSE"		//elipse shape of mark
 
 // definition columns for load each imput items.
 #define CHRITEMSCOUNT 5	
 #define BLOCKITEMSCOUNT 6
 #define MAPITEMSCOUNT 8
 #define CENTROMEREITEMSCOUNT 2
+#define FISHITEMSCOUNT 6
 
 using namespace std;
 
@@ -51,7 +55,7 @@ class karyotype
 		string name;	// name of karyotype
 		string alias; // alias of karyotype
 		list<chromosome*> katype; // karyotype contain chromosomes	
-		
+		int internalAliasMark;	// For generateing distinguish internal alias for marks. 
 
 	public:
 		void setName(string name);
@@ -69,9 +73,14 @@ class karyotype
 		float getMaxStringLenghtChrName();
 		int getMaxChromosomeLenght();
 		int getChromosomeCount();
+		void addMissingBlocks();
 	
 	private:
 		void sortBlocks();
+		void incrementInternalMarkAlias();
+		string getInternalMarkAlias();
+		void calculateNewData();
+		
 };
 
 #endif // KARYOTYPE_H_

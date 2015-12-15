@@ -17,6 +17,7 @@ parameters::parameters(void)
 	outputPath = "";
 	colourPath = "./inst/extdata/default_colors.txt";
 	inputMatrixPath = "";
+	format = DEFAULTDATAFORMAT;
 	useScale = false;
 }
 
@@ -36,12 +37,19 @@ parameters::~parameters(void)
 int parameters::loadArguments(int argc, char* argv[])
 {
 	char op_char;
-	char params[10] = "hocds";
+	char params[10] = "hocdsf"; // parameters short cuts
+	// expande parametres
+	char *paramsExpanded[10] = {"--help",
+								"--outputpath",
+								"--colorinputpath",
+								"--datainputpath",
+								"--scale",
+								"--format"};
 	getOpts* opts = new getOpts();
  
   
 
-	while((op_char = opts->getOptions(argc,argv, params)) != EOF)
+	while((op_char = opts->getOptions(argc,argv, params, paramsExpanded)) != EOF)
 	{
 
 		switch (op_char)
@@ -81,6 +89,21 @@ int parameters::loadArguments(int argc, char* argv[])
 			case 's':
 				this->setUseScale(true);
 				break;
+			case 'f':
+				if(parsing::stringToUpper(((string)argv[opts->getOptID()])).compare(DEFAULTDATAFORMAT) == 0)
+				{	
+					this->setInputDataFormat(DEFAULTDATAFORMAT);
+				}
+				else if(parsing::stringToUpper(((string)argv[opts->getOptID()])).compare(BEDDATAFORMAT) == 0)
+				{
+					this->setInputDataFormat(BEDDATAFORMAT);
+				}
+				else
+				{
+					// unsupporte input data format.
+					throw(100);
+				}
+				break;
 			default:
 					return 1;
 				break;
@@ -99,11 +122,12 @@ void parameters::help()
 {
 	cout << "This program generate linear and circular chromosomes pictures." << endl << endl;
 	cout << "OPTIONS:" << endl;
-	cout << "-h	Show help." << endl;
-	cout << "-o	Path to output directory." << endl;
-	cout << "-d	Path to input file with chromosome matrix." << endl;
-	cout << "-c	File with path to color settings." << endl;
-	cout << "-s Use same scale for linear visualization" << endl;
+	cout << "-h , --help	Show help." << endl;
+	cout << "-o , --outputpath	Path to output directory." << endl;
+	cout << "-d , --datainputpath	Path to input file with chromosome matrix." << endl;
+	cout << "-c	, --colorinputpathFile with path to color settings." << endl;
+	cout << "-s , --scale Use same scale for linear visualization" << endl;
+  cout << "-f , --format Type of input data format - bed or chromdraw. Default is chromdraw"  << endl;
 
 }
 
@@ -184,6 +208,24 @@ void parameters::setInputMatrixPath(string path)
 string parameters::getInputMatrixPath()
 {
 	return inputMatrixPath;
+}
+/**
+* Set type of input data format.
+* @param format Input data format.
+*/
+void parameters::setInputDataFormat(string format)
+{
+	
+	this->format=format;
+}
+
+/**
+* Get input data format.
+* @return Input data format.
+*/
+string parameters::getInputDataFormat()
+{
+	return this->format;
 }
 
 /**

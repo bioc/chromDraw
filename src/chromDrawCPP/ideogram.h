@@ -17,7 +17,9 @@
 #include "canvas.h"
 #include "colorPalette.h"
 #include "parsing.h"
+#include "parameters.h"
 
+// chromDraw data format
 #define LINEARIMGNAME "linear."		// default name of linear images
 #define CIRCULARIMGNAME "circular." // default name of circular images
 #define KARYOTYPE "KARYOTYPE"		// key word for loading data
@@ -26,6 +28,12 @@
 #define COMMENT '#'			// key word for loading data
 
 #define KARYOTYPEITEMSCOUNT 4	// count of items at one line of definiton caryopte
+
+
+// BED data format
+#define BROWSER "BROWSER"
+#define TRACK "TRACK"
+#define RGBDELIMITER ","
 
 using namespace std;
 
@@ -37,13 +45,14 @@ class ideogram
 		colorPalette	palette;	// color palette
 		list<canvas*> lin_sheets;	// list with sheet for linear images
 		canvas *cir_sheet;		// sheet for linear and circular images
+		
 
 	public:
 		ideogram(void);
 		~ideogram(void);
 
 		void draw(bool useScale);
-		int loadMatrix(string path);
+		int loadMatrix(string path, string format);
 		void pushKaryotype(karyotype *k);
 		void popKaryotype(string sAlias);
 		karyotype* getKaryotype(string sAlias);
@@ -52,6 +61,11 @@ class ideogram
 		canvas* getCanvas(string sAlias);
 		void saveImages(string path);
 		int loadColorPalette(string path);
+		void dataCorrection();
+
+	private:
+		int loadChromDrawDataMatrix(string path);
+		int loadBedDataMatrix(string path);
 
 };
 

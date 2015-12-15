@@ -1,1 +1,2 @@
-This is first version of chromDraw package.
+Visualization the cytogenetic markers.
+BED file visualization. (required the first nine field per record)

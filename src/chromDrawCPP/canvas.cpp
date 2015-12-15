@@ -90,8 +90,8 @@ void canvas::save(string path)
 	sheet.drawDot(min_x, min_y);
 	sheet.drawDot(max_x, max_y);
 
-	sheet.save((path+"svg").c_str());
-	sheet.save((path+"eps").c_str());
+	sheet.saveSVG((path+"svg").c_str());
+	sheet.saveEPS((path+"eps").c_str());
 //		sheet.save((path+"svg").c_str());
 //  	sheet.save((path+"eps").c_str());
 	//sheet.saveSVG(path.c_str(), PAGEHEIGHT, PAGEWIDTH);
@@ -144,14 +144,27 @@ void canvas::lin_init(int maxChromosomLenght, int count)
 }
 
 /**
+* Init coordinates for redraw chromosome by marks.
+*/
+void canvas::lin_initForMarks()
+{
+	last_y = 0.0;
+}
+
+/**
 * Set coordinates in sheet for next chromosom.
 */
 void canvas::lin_nextChromosom()
 {
 	last_x += LIN_CHROMOSOMDISTANC;
 	last_y = 0.0;
-	if(last_x > max_x)
+	if((last_x-0.5*CHROMOSOMEWIDTH) > max_x)
 		max_x = last_x;
+	else if (max_x > (last_x-0.5*CHROMOSOMEWIDTH))
+	{
+		last_x = max_x + 0.5*CHROMOSOMEWIDTH + 4*SPACEBETWEENMARKANDTEXT;
+		max_x = last_x;
+	}
 }
 
 /**
@@ -227,7 +240,7 @@ void canvas::lin_drawBlockName(int lenght, string name, Color c)
 	double x = ((FONTSIZECHRNAME * (charsLenghts::getStringPxLengh(name)/2.0)) / 10);
 	double y = (0.5 * lenght * lin_scale) - (ARIALWIDTH * FONTSIZECHRNAME / 744.0) / 2.0;
 	
-	sheet.drawText(last_x - x, last_y + y, name.c_str());
+	sheet.drawText(last_x - x, last_y + y, name.c_str(), DEPTHOFBLOCKNAME);
 }
 
 /**
@@ -290,6 +303,188 @@ void canvas::lin_drawTelomere(bool north)
 
 
 
+/////////////////// MARKS - Linear /////////////////////////////////////////
+
+/**
+* Methode for linear draw of mark and shape of mark is rectangle.
+@param position Position of mark on the chromosome.
+@param location Location on the chromosome.
+@param size Size of mark.
+*/
+void canvas::lin_drawRectangleMarkSign(int position, ELocationOnChromosome location, int size)
+{
+	float sizefactor = 1.0 + size*MARK_SIZEFACTOR;
+	sheet.setLineWidth( LINEWIDTH );
+	sheet.setPenColor( Color::Black );
+	
+	float coordinate_y;
+	double x,y;	// temporary variable
+
+	switch (location)
+	{
+		case canvas::LNillItem:
+			coordinate_y = 0.0;
+			break;
+		case canvas::LNorthTelomere:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+			break;
+		case canvas::LNorthArm:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm section
+				coordinate_y -= (float)(position*lin_scale);
+			break;
+		case canvas::LCentromere:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm section
+				coordinate_y -= (float)(position*lin_scale);
+				//Centromere section
+				coordinate_y -= 0.5*LIN_CENTROMEREHEIGHT;
+			break;
+		case canvas::LSouthArm:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm + south arm section
+				coordinate_y -= (float)(position*lin_scale);
+				//Centromere section
+				coordinate_y -= LIN_CENTROMEREHEIGHT;
+			break;
+		case canvas::LSouthTelomere:
+			break;
+		default:
+			coordinate_y = 0.0;
+			break;
+	}
+	
+	sheet.drawRectangle(last_x-0.5*sizefactor*MARK_WIDTHSIZE1, coordinate_y+0.5*sizefactor*MARK_HEIGHTSIZE1, sizefactor*MARK_WIDTHSIZE1, sizefactor*MARK_HEIGHTSIZE1);
+
+	
+	last_y += (float)(coordinate_y-0.5*sizefactor*MARK_HEIGHTSIZE1);
+	if(last_y < min_y)
+		min_y = last_y;
+	if(last_y > max_y)
+		max_y = last_y;
+	if(last_x+0.5*sizefactor*MARK_WIDTHSIZE1 > max_x)
+		max_x = last_x+0.5*sizefactor*MARK_WIDTHSIZE1;
+	if(last_x-0.5*sizefactor*MARK_WIDTHSIZE1 < min_x)
+		min_x = last_x-0.5*sizefactor*MARK_WIDTHSIZE1;
+		
+}
+
+/**
+* Methode for linear draw of mark and shape of mark is ellipse.
+@param position Position of mark on the chromosome.
+@param location Location on the chromosome.
+@param size Size of mark.
+*/
+void canvas::lin_drawEllipseMarkSign(int position, ELocationOnChromosome location, int size)
+{
+	float sizefactor = 1.0 + size*MARK_SIZEFACTOR;
+	sheet.setLineWidth( LINEWIDTH );
+	sheet.setPenColor( Color::Black );
+	
+	float coordinate_y;
+	double x,y;	// temporary variable
+
+	switch (location)
+	{
+		case canvas::LNillItem:
+			coordinate_y = 0.0;
+			break;
+		case canvas::LNorthTelomere:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+			break;
+		case canvas::LNorthArm:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm section
+				coordinate_y -= (float)(position*lin_scale);
+			break;
+		case canvas::LCentromere:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm section
+				coordinate_y -= (float)(position*lin_scale);
+				//Centromere section
+				coordinate_y -= 0.5*LIN_CENTROMEREHEIGHT;
+			break;
+		case canvas::LSouthArm:
+				//North telomere section
+				y = last_y - TELOMERERADIUS - LINEWIDTH;
+				x = 0.5*CHROMOSOMEWIDTH;
+				coordinate_y = (float)(y + sqrt(TELOMERERADIUS*TELOMERERADIUS - x*x) + LINEWIDTH);
+				//North arm + south arm section
+				coordinate_y -= (float)(position*lin_scale);
+				//Centromere section
+				coordinate_y -= LIN_CENTROMEREHEIGHT;
+			break;
+		case canvas::LSouthTelomere:
+			break;
+		default:
+			coordinate_y = 0.0;
+			break;
+	}
+
+
+	sheet.drawEllipse(last_x,coordinate_y, sizefactor*MARK_WIDTHSIZE1/2.0,sizefactor*MARK_HEIGHTSIZE1);
+	
+	last_y += (float)(coordinate_y-0.5*sizefactor*MARK_HEIGHTSIZE1);
+	if(last_y < min_y)
+		min_y = last_y;
+	if(last_y > max_y)
+		max_y = last_y;
+	if(last_x+0.5*sizefactor*MARK_WIDTHSIZE1 > max_x)
+		max_x = last_x+0.5*sizefactor*MARK_WIDTHSIZE1;
+	if(last_x-0.5*sizefactor*MARK_WIDTHSIZE1 < min_x)
+		min_x = last_x-0.5*sizefactor*MARK_WIDTHSIZE1;
+}
+	
+/**
+* Methode for draw name of mark.
+@param position Position of mark
+@param sizeOfMark Size of mark
+@param name Text for drawing
+@param c Color of text
+*/
+void canvas::lin_drawMarkSignName(int position, int sizeOfMark, string name, Color c)
+{
+	sheet.setPenColor(c).setFont(FONTNAME, FONTSIZECHRNAME);
+	float sizefactor = 1.0 + sizeOfMark*MARK_SIZEFACTOR;
+	
+	// calculate coordinates for start text
+	//double x = ((FONTSIZECHRNAME * (charsLenghts::getStringPxLengh(name)/2.0)) / 10);
+	double y = (0.5*sizefactor*MARK_HEIGHTSIZE1) - (ARIALWIDTH * FONTSIZECHRNAME / 744.0) / 2.0;
+
+
+	sheet.drawText(last_x+0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT, last_y + y, name.c_str());
+	
+	float textLen = (float)(charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+
+	if(last_x+0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT+textLen > max_x)
+		max_x = last_x+0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT+textLen;
+	if(last_x+0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT+textLen < min_x)
+		min_x = last_x+0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT+textLen;
+}
+
+
+
 // ------- methods for circular drawing -----------
 
 /**
@@ -319,6 +514,28 @@ void canvas::cir_init(unsigned long int lenght, int countChromosome, int countCe
 
 	cir_angle_startLastChromosome = 0.0;
 	cir_angle_stopLastChromosome = 0.0;
+
+	max_x = (float)(cir_radius + 0.5*CHROMOSOMEWIDTH);
+	max_y = (float)(cir_radius + 0.5*CHROMOSOMEWIDTH);
+	min_x = (float)((-1)*cir_radius - 0.5*CHROMOSOMEWIDTH);
+	min_y = (float)((-1)*cir_radius - 0.5*CHROMOSOMEWIDTH);
+}
+
+/**
+* Init for drawing marks.
+*/
+void canvas::cir_initForMarks()
+{
+	cir_angle = cir_angle_startLastChromosome;
+}
+
+// nastaveni puvodnich hodnot po dokonceni vykreslovani znacek.
+/**
+* Finishing drawing marks
+*/
+void canvas::cir_finisDrawMarksForChromosome()
+{
+	cir_angle = cir_angle_stopLastChromosome;
 }
 
 /**
@@ -331,9 +548,9 @@ void canvas::cir_init(unsigned long int lenght, int countChromosome, int countCe
 void canvas::cir_nextCircle(unsigned long int lenght, int countChromosome, int countCentromere, float maxStringLenghtChrName)
 {
 	cir_angle = 0.0;
-	cir_radius += 0.5*CHROMOSOMEWIDTH;
-	cir_radius += CIR_CIRCLEDISTANC;
-	cir_radius += (float)((maxStringLenghtChrName) * FONTSIZECHRNAME / 10.0);
+	//cir_radius = max_x + 0.5*CHROMOSOMEWIDTH;
+	cir_radius = max_x + CIR_CIRCLEDISTANC;
+	//cir_radius += (float)((maxStringLenghtChrName) * FONTSIZECHRNAME / 10.0);
 	cir_scale = 2 * M_PI * cir_radius * (1.0 - countChromosome*CIR_CHROMOSOMEDISTANC - countCentromere*CIR_CENTROMEREHEIGHT ) / lenght;
 
 	cir_angle_startLastChromosome = 0.0;
@@ -412,8 +629,60 @@ void canvas::cir_drawCentromere()
 */
 void canvas::cir_drawChromosomeName(string name)
 {
+	/*
+  // Drawing name of chromosome in the mid of his length (uprostred na boku)
 	// calculate position of mid coordinates for curent chromosom
 	float cir_textRotation = (float)(-1.0*(cir_angle_startLastChromosome + (cir_angle_stopLastChromosome - cir_angle_startLastChromosome)/2.0));
+
+	sheet.setPenColor(Color::Black).setFont(FONTNAME, FONTSIZECHRNAME);
+	sheet.drawText(0.0, 0.0, name.c_str());
+	
+	// text lenght in pixels
+	float textLen = (float)(charsLenghts::getStringPxLengh(name+" ") * FONTSIZECHRNAME / 10.0);
+
+	
+	if(cir_textRotation > (-1.0*M_PI))
+	{
+		// right side of circle
+		sheet.last<Text>().translate(0.0, 0.5*charsLenghts::getStringPxLengh(" ") * FONTSIZECHRNAME / 10.0 + 0.5 * CHROMOSOMEWIDTH);
+		sheet.last<Text>().rotate(90 * Board::Degree);
+	
+		if(max_x < cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen)
+		{
+			max_x = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+		}
+	}
+	else
+	{
+		// left side of circle
+		//sheet.last<Text>().translate(0.0, ARIALWIDTH * FONTSIZECHRNAME / 1052.0 + CHROMOSOMEWIDTH);
+		sheet.last<Text>().translate(0.0, (charsLenghts::getStringPxLengh(name) + 0.5*charsLenghts::getStringPxLengh(" ")) * FONTSIZECHRNAME / 10 + 0.5 * CHROMOSOMEWIDTH);
+		sheet.last<Text>().rotate(-90 * Board::Degree);
+
+		if(min_x > (-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen)
+		{
+			min_x = (float)((-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen);
+		}
+	}
+
+	if(max_y < cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen)
+	{
+		max_y = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+	}
+	if(min_y > (-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen)
+	{
+		min_y = (float)((-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen);
+	}
+
+	sheet.last<Text>().translate(0.0, cir_radius + 0.15*CIR_CIRCLEDISTANC);
+	sheet.last<Text>().rotate(cir_textRotation, Point(0.0, 0.0));
+	*/
+
+/*
+
+	// Drawing name of chromosome on top side of chromosome (na zacatku na boku)
+	// calculate position of mid coordinates for curent chromosom
+	float cir_textRotation = (float)(-1.0*(cir_angle_startLastChromosome ));
 
 	sheet.setPenColor(Color::Black).setFont(FONTNAME, FONTSIZECHRNAME);
 	sheet.drawText(0.0, 0.0, name.c_str());
@@ -457,6 +726,68 @@ void canvas::cir_drawChromosomeName(string name)
 	sheet.last<Text>().translate(0.0, cir_radius + 0.15*CIR_CIRCLEDISTANC);
 	sheet.last<Text>().rotate(cir_textRotation, Point(0.0, 0.0));
 
+*/
+
+	// Drawing name of chromosome above of chromosome (V mezere nad chromosomem)
+	// calculate position of mid coordinates for curent chromosom
+	float cir_textRotation = (float)(-1.0*(cir_angle_startLastChromosome));
+
+	sheet.setPenColor(Color::Black).setFont(FONTNAME, FONTSIZECHRNAME);
+	sheet.drawText(0.0, 0.0, name.c_str());
+	
+	// text lenght in pixels
+	float textLen = (float)(charsLenghts::getStringPxLengh(name+" ") * FONTSIZECHRNAME / 10.0);
+
+
+	// right side of circle // (otaceni textu, vyjmuto z IF nize)
+	sheet.last<Text>().translate(0.0 - TELOMEREHEIGHT - 0.2*FONTSIZECHRNAME, (-0.5)*charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+	sheet.last<Text>().rotate(90 * Board::Degree);
+	
+	if(max_x < cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen)
+	{
+		max_x = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+	}
+	/* (vykreslovani ktere se po 180 stupnich meni)
+	if(cir_textRotation > (-1.0*M_PI))
+	{
+		// right side of circle
+		sheet.last<Text>().translate(0.0 - TELOMEREHEIGHT - 0.2*FONTSIZECHRNAME, (-0.5)*charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+		sheet.last<Text>().rotate(90 * Board::Degree);
+	
+		if(max_x < cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen)
+		{
+			max_x = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+		}
+	}
+	else
+	{
+		// left side of circle
+		//sheet.last<Text>().translate(0.0, ARIALWIDTH * FONTSIZECHRNAME / 1052.0 + CHROMOSOMEWIDTH);
+		sheet.last<Text>().translate(0.0 - TELOMEREHEIGHT - 1.0*FONTSIZECHRNAME, 0.5*charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+		sheet.last<Text>().rotate(-90 * Board::Degree);
+
+		if(min_x > (-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen)
+		{
+			min_x = (float)((-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen);
+		}
+	}
+	*/
+
+	if(max_y < cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen)
+	{
+		max_y = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+		max_x = (float)(cir_radius + 0.5 * CHROMOSOMEWIDTH + textLen);
+	}
+	if(min_y > (-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen)
+	{
+		min_y = (float)((-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen);
+		min_x = (float)((-1)*cir_radius - 0.5 * CHROMOSOMEWIDTH - textLen);
+	}
+
+	sheet.last<Text>().translate(0.0, cir_radius);
+	sheet.last<Text>().rotate(cir_textRotation, Point(0.0, 0.0));
+
+
 }
 
 
@@ -474,11 +805,13 @@ void canvas::cir_drawBlockName(int lenght, string name, Color c)
 
 	sheet.setPenColor(c).setFont(FONTNAME, FONTSIZECHRNAME);
 	
-	sheet.drawText(0.0, 0.0, name.c_str());
+	sheet.drawText(0.0, 0.0, name.c_str(), DEPTHOFBLOCKNAME);
 //sheet.last<Text>().translate(0.0, -1.0 * ARIALWIDTH * FONTSIZECHRNAME / 1052.0 - 0.5 * CHROMOSOMEWIDTH);
 	
-	
-	
+	// (otaceni textu, vyjmuto z IF nize)
+	sheet.last<Text>().translate(0.0, -0.5 * charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+	sheet.last<Text>().rotate(90 * Board::Degree);
+	/* (vykreslovani ktere se po 180 stupnich meni)
 	if(cir_textRotation > (-1.0*M_PI))
 	{
 		//sheet.last<Text>().translate(0.0, -1.0 * name.length() * ARIALWIDTH * FONTSIZECHRNAME / 526.0);
@@ -490,10 +823,14 @@ void canvas::cir_drawBlockName(int lenght, string name, Color c)
 		sheet.last<Text>().translate(0.0, 0.5 * charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
 		sheet.last<Text>().rotate(-90 * Board::Degree);
 	}
+	*/
 	sheet.last<Text>().translate(0.0, cir_radius);
 	sheet.last<Text>().rotate(cir_textRotation, Point(0.0, 0.0));
 
+	// (otaceni textu, vyjmuto z IF nize)
+	sheet.last<Text>().rotate((-0.5*FONTSIZECHRNAME / cir_radius),  Point(0.0, 0.0));
 	// korekce vzhledem k velikosti pisma
+	/*
 	if(cir_textRotation > (-1.0*M_PI))
 	{
 		sheet.last<Text>().rotate((-0.5*FONTSIZECHRNAME / cir_radius),  Point(0.0, 0.0));
@@ -502,6 +839,7 @@ void canvas::cir_drawBlockName(int lenght, string name, Color c)
 	{
 		sheet.last<Text>().rotate((0.5*FONTSIZECHRNAME / cir_radius),  Point(0.0, 0.0));
 	}
+	*/
 }
 
 /**
@@ -560,6 +898,205 @@ void canvas::cir_drawTelomere(bool north)
 	}
 
 }
+
+/**
+* Skip drawing of telomeres - start/end point of chromosom.
+* @param north TRUE for north telomere and FALSE for south telomere.
+*/
+void canvas::cir_skipTelomere(bool north)
+{
+
+	vector<Point> points;
+
+	if(north)
+	{
+		cir_angle += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+		cir_angle_startLastChromosome = cir_angle;
+	}
+	if(!north)
+	{	// actualize end position of chromosom.
+		cir_angle += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+		cir_angle_stopLastChromosome = cir_angle;
+	}
+
+}
+
+
+//////////////////////////////////// MARKS - CIRKULAR ///////////////////////////////////////
+/**
+* Methode for drawing mark of sign. Shape of mark is rectangle.
+* @param position Position of mark.
+* @param location Location on the chromosome.
+* @param size Size of mark.
+*/
+void canvas::cir_drawRectangleMarkSign(int position, ELocationOnChromosome location, int size)
+{
+	float sizefactor = 1.0 + size*MARK_SIZEFACTOR;
+	sheet.setLineWidth( LINEWIDTH );
+	sheet.setPenColor( Color::Black );
+	double mark_position = cir_angle_startLastChromosome;
+	
+
+	switch (location)
+	{
+		case canvas::LNillItem:
+			mark_position = 0.0;
+			break;
+		case canvas::LNorthTelomere:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+			break;
+		case canvas::LNorthArm:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+			break;
+		case canvas::LCentromere:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+				//Centromere section
+				mark_position += 2*M_PI * (CIR_CENTROMEREHEIGHT / 2.0);
+			break;
+		case canvas::LSouthArm:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm + south arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+				//Centromere section
+				mark_position += 2*M_PI * (CIR_CENTROMEREHEIGHT / 2.0);
+			break;
+		case canvas::LSouthTelomere:
+			break;
+		default:
+			mark_position = 0.0;
+			break;
+	}
+	cir_angle = mark_position;
+
+	sheet.drawRectangle(0.0-0.5*sizefactor*MARK_WIDTHSIZE1, 0.0+0.5*sizefactor*MARK_HEIGHTSIZE1, sizefactor*MARK_WIDTHSIZE1, sizefactor*MARK_HEIGHTSIZE1);
+	
+	//set mark to the position on the circle
+	sheet.last<Rectangle>().rotate(90 * Board::Degree, Point(0.0, 0.0));
+	sheet.last<Rectangle>().translate(0.0, cir_radius);
+	sheet.last<Rectangle>().rotate(-cir_angle, Point(0.0, 0.0));
+	
+	// calculating maximum size of picture
+	if(max_x < (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH)))
+	{
+		max_x = (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		max_y = (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		min_x = (float)((-1)*cir_radius - (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		min_y = (float)((-1)*cir_radius - (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+	}
+ 
+}
+
+/**
+* Methode for drawing mark of sign. Shape of mark is elipse.
+* @param position Position of mark.
+* @param location Location on the chromosome.
+* @param size Size of mark.
+*/
+void canvas::cir_drawEllipseMarkSign(int position, ELocationOnChromosome location, int size)
+{
+	float sizefactor = 1.0 + size*MARK_SIZEFACTOR;
+	sheet.setLineWidth( LINEWIDTH );
+	sheet.setPenColor( Color::Black );
+	double mark_position = cir_angle_startLastChromosome;
+	
+
+	switch (location)
+	{
+		case canvas::LNillItem:
+			mark_position = 0.0;
+			break;
+		case canvas::LNorthTelomere:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+			break;
+		case canvas::LNorthArm:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+			break;
+		case canvas::LCentromere:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+				//Centromere section
+				mark_position += 2*M_PI * (CIR_CENTROMEREHEIGHT / 2.0);
+			break;
+		case canvas::LSouthArm:
+				//North telomere section
+				//mark_position += (float)(CIR_CHROMOSOMEDISTANC * M_PI);
+				//North arm + south arm section
+				mark_position += (float)(position * cir_scale) / cir_radius; // center of mark
+				//Centromere section
+				mark_position += 2*M_PI * (CIR_CENTROMEREHEIGHT / 2.0);
+			break;
+		case canvas::LSouthTelomere:
+			break;
+		default:
+			mark_position = 0.0;
+			break;
+	}
+	cir_angle = mark_position;
+
+	
+
+	sheet.drawEllipse(0.0, 0.0, sizefactor*MARK_WIDTHSIZE1/2.0, sizefactor*MARK_HEIGHTSIZE1);
+	//set mark to the position on the circle
+	sheet.last<Ellipse>().rotate(90 * Board::Degree, Point(0.0, 0.0));
+	sheet.last<Ellipse>().translate(0.0, cir_radius);
+	sheet.last<Ellipse>().rotate(-cir_angle, Point(0.0, 0.0));
+	
+	// calculating maximum size of picture
+	if(max_x < (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH)))
+	{
+		max_x = (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		max_y = (float)(cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		min_x = (float)((-1)*cir_radius - (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+		min_y = (float)((-1)*cir_radius - (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH));
+	}
+}
+
+/**
+* Draw name of mark - next the circle.
+* @param position Position of mark.
+* @param sizeOfMark Mark size factor.
+* @param name Text for drawing.
+* @param c Color of text.
+*/
+void canvas::cir_drawMarkSignName(int position, int sizeOfMark, string name, Color c)
+{
+	sheet.setPenColor(c).setFont(FONTNAME, FONTSIZECHRNAME);
+	float sizefactor = 1.0 + sizeOfMark*MARK_SIZEFACTOR;
+	double y = (0.5*sizefactor*MARK_HEIGHTSIZE1) - (ARIALWIDTH * FONTSIZECHRNAME / 744.0) / 2.0;
+	
+
+	
+	sheet.drawText(0.0, 0.0, name.c_str());
+	sheet.last<Text>().rotate(90 * Board::Degree);
+
+	sheet.last<Text>().translate(0.0, cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT));
+	sheet.last<Text>().rotate(-(cir_angle - (y / cir_radius)), Point(0.0, 0.0));
+
+	// calculate minimum radius of next circle
+	float max_radius = (float)cir_radius + (0.5*sizefactor*MARK_WIDTHSIZE1+SPACEBETWEENMARKANDTEXT) + (0.5*sizefactor*MARK_WIDTHSIZE1 - 0.5*CHROMOSOMEWIDTH) + (charsLenghts::getStringPxLengh(name) * FONTSIZECHRNAME / 10.0);
+	if(max_x < max_radius)
+	{
+		max_x = max_radius;
+		max_y = max_radius;
+		min_x = (-1.0)*max_radius;
+		min_y = (-1.0)*max_radius;
+	}
+}
+
 
 
 

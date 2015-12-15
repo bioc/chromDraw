@@ -64,7 +64,7 @@ BLOCK X X al8 6700000 9200000 pink
 KARYOTYPE END
 
 #Research Article: 
-#	Terezie Mandáková, 
+#	Terezie Mand?kov?, 
 #	Simon Joly, 
 #	Martin Krzywinski, 
 #	Klaus Mummenhoff and 
@@ -151,5 +151,9 @@ BLOCK V1 V1 al4 31260000 33660000 pink
 BLOCK S2 S2 al4 33660000 36060000 light_blue 
 BLOCK T2 T2 al4 36060000 37160000 light_blue 
 BLOCK U2 U2 al4 37160000 45860000 light_blue
+
+MARK 35S_rDNA RECTANGLE 1 al1 11739990 white 
+MARK 35S_rDNA RECTANGLE 1 al3 100000 white
+MARK 5S_rDNA RECTANGLE 1 al3 6799990 black 
 
 KARYOTYPE END

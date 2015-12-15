@@ -38,6 +38,7 @@
 %\VignetteIndexEntry{chromDraw}
 
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
 \pagestyle{plain}
 
 
@@ -47,7 +48,7 @@ BiocCheck}
 
 \begin{center}
 {\bf Simple karyotypes visualization using {\tt chromDraw}}\\[5pt]
-Jan Jane\v{c}ka\\
+Jan Janecka\\
 Research group Plant Cytogenomics\\
 CEITEC, Masaryk University of Brno 
 \end{center}
@@ -66,7 +67,8 @@ of R and C++ is made by Rcpp package \cite{Rcpp2011} and allows completely
 hiding C++ implementation for R user. BiocCheck \cite{BiocCheck} and 
 BiocInstaller \cite{BiocInstaller} R packages were used during development of 
 package. In R is supported Genomic Ranges \cite{GenomicRanges} and data frame 
-as a input data and color data format.
+as a input data and color data format. ChromDraw can visualize files in the  BED 
+file format, that is requirement the first nine of fields per each record.
 
 %//////////////////////////////////////////////////////////////////////////////
 \section{Data format}
@@ -76,8 +78,9 @@ description of colors.
 
 \subsection{The main input file}
 The main information about karyotype(s) is stored in this file. This input file 
-includes karyotype definition and definitions of each chromosome and blocks of 
-that karyotype. The file is in a plain text and is not case sensitive.
+includes karyotype definition, with definitions of each chromosome and blocks 
+of that karyotype and definition of the marks. The file is in a plain text and 
+is not case sensitive.
 
 \begin{itemize}
 \item{\bf{}Karyotype definition:\rm{}}\\
@@ -102,12 +105,18 @@ chromosome. Color is a name of color in the second input file and it is
 optional parameter. Centromere is defined by key word \sc{}centromere\rm{} and 
 alias of corresponding chromosome. It must follows block, which is directly 
 before centromere.
+
+\item{\bf{}Marks definitions:\rm{}}\\
+Mark is defined by the keyword MARK and it follows the title, type of shape and 
+size of the mark. Here is available only rectangle shape temporarily. This 
+definition is finished by the alias and position of the participant chromosome. 
+At the end is name of the color for drawing a mark. This symbols are plotted 
+over the chromosome blocks.
+
 \end{itemize}
 
 Comments can put in any part of the file, assigned by \# symbol at the 
-beginning of new line. Attribute of name is represented two chars of quotation marks "" for print empty strings to output picture. 
-\\
-Example of input data file:
+beginning of new line. Example of input data file:
 
 %See example of the input data file in attachment 
 %\ref{at:1}, which represents the original data of the {\tt Ancestral Crucifer 
@@ -129,6 +138,9 @@ Example of input data file:
   # Centromere definition
   CENTROMERE al1
   BLOCK C C al1 12400000 17000000 yellow
+  
+  # Mark definition
+  MARK 35S_rDNA RECTANGLE 2 al1 11739990 white
   
   KARYOTYPE END
 
@@ -193,6 +205,28 @@ exampleColor;
 @
 
 %//////////////////////////////////////////////////////////////////////////////
+\section{Input parameters}
+In chromDraw is possible to use short or long type of parameters.
+
+\begin{itemize}
+
+\item{-h , --help}
+Show help.
+\item{-o , --outputpath}
+Path to output directory. Current working directory is set as default.
+\item{-d , --datainputpath}
+Path to the input file with chromosome matrix or BED file.
+\item{-c, --colorinputpath}
+The file with path to color definitions.
+\item{-s , --scale}
+Use same scale for the linear visualization outputs.
+\item{-f , --format}
+Type of the input data format  BED or CHROMDRAW. Default setting is CHROMDRAW.
+
+\end{itemize}
+
+
+%//////////////////////////////////////////////////////////////////////////////
 \section{Visualization}
 After preparation of all necessary input files, the using of 
 \tt{}chromDraw\rm{} is very simple. There are only two functions in 
@@ -231,13 +265,16 @@ library(chromDraw)
 chromDrawGR(list(exampleData), exampleColor);
 @
 
-See example of the linear visualization output from {\tt chromDraw} in picture 
-\ref{fig:linear_Ack} and the circular type of visualization with 
-Ancestral Crucifer Karyotype \cite{Lysak28032006,Schranz2006535} and 
-\it{}Stenopetalum nutans\rm{} \cite{Mandakova01072010} in the second 
-\ref{fig:circular_Ack_Sn} picture. The second picture illustrates different 
-chromosome number and genomic blocks rearrangements between this two karyotypes.
-Linear visualization has switcher -s to keep same scale of all chromosomes. If this switcher is used, then the linear pictures have retained the size ratio between all chromosomes in all karyotypes.
+See example of the linear visualization output from {\tt chromDraw} in 
+the first picture \ref{fig:linear_Ack} with  Ancestral Crucifer Karyotype 
+\cite{Lysak28032006,Schranz2006535}. The second visualization of four ancestral 
+or extant karyotypes from the mustard family (Brassicaceae): {\it Stenopetalum 
+nutans} (Sn, n = 4), {\it Arabidopsis thaliana} (At, n = 5), {\it Boechera 
+stricta} (Bs, n = 7) and Ancestral Crucifer Karyotype (ACK, n = 8). Data 
+matrices are based on \cite{Mandakova01072010} and \cite{Schranz2006535}. 5S 
+rDNA and 35S rDNA loci are visualized as black and white rectangles, 
+respectively. 
+
 
 \begingroup
   \begin{figure}[!h]
@@ -251,21 +288,36 @@ Linear visualization has switcher -s to keep same scale of all chromosomes. If t
   \begin{figure}[!h]
     \centering
     \includegraphics[width=8cm, height=8cm]{circular.png}
-    \caption{Circular visualization of Ancestral Crucifer Karyotype and 
-  \it{}Stenopetalum nutans\rm{}}
+    \caption{Circular visualization of four ancestral or extant karyotypes from 
+the mustard family (Brassicaceae)}
     \label{fig:circular_Ack_Sn}
   \end{figure}
 \endgroup 
 
+The BED file is visualized by the same function chromDraw, where is necessary to 
+set the parameter format to the value BED. Here is an example how to use this 
+feature: 
 
-\newpage
+<<vignette.chromDraw>>=
+library(chromDraw)
+
+OUTPUTPATH = file.path(getwd());
+
+INPUTPATH = system.file('extdata',
+                        'bed.bed', 
+                        package ='chromDraw')
+                        
+chromDraw(argc=7,  
+          argv=c("chromDraw", "-f", "bed", "-d",INPUTPATH, "-o",
+OUTPUTPATH));
+@
+
 %//////////////////////////////////////////////////////////////////////////////
 \section{Acknowledgements}
-I would like to thank to: M. A. Lysak  for constructive comments, Ma\v{t}ej Lexa 
-for advices on bioinformatics and to Ji\v{r}\'{i} Hon for introdution to R package 
+I would like to thank to: M. A. Lysak  for constructive comments, Matej Lexa 
+for advices on bioinformatics and to Jiri Hon for introdution to R package 
 creating.
 \\
-\newline
 {\it Funding}: Czech Science Foundation (P501/12/G090) and \\ 
 European Social Fund (CZ.1.07/2.3.00/20.0189)
 

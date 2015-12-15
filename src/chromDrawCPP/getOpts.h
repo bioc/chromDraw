@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <string.h>
 
 
 using namespace std;
@@ -25,7 +26,7 @@ class getOpts
 		int optID;	// id of option from vector with arguments
 
 	public:
-		char getOptions(int argc, char** argv, char* optv); // methode for arguments parssing
+		char getOptions(int argc, char** argv, char* optv, char** optvExpanded); // methode for arguments parssing
 		int getOptID();	// get index on curent value of argument
 };
 

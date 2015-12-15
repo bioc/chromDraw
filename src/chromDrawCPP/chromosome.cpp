@@ -117,6 +117,7 @@ int chromosome::getEnd()
 */
 void chromosome::draw(canvas *sheet, colorPalette palette, bool linear)
 {
+	
 	// draw chromosom name - linear
 	if(linear)
 	{
@@ -124,13 +125,23 @@ void chromosome::draw(canvas *sheet, colorPalette palette, bool linear)
 	}
 
 	// draw north telomere
-	if(linear)
+	if(getBegin() == 0)
 	{
-		sheet->lin_drawTelomere(true);
+		if(linear)
+		{
+			sheet->lin_drawTelomere(true);
+		}
+		else
+		{
+			sheet->cir_drawTelomere(true);
+		}
 	}
 	else
 	{
-		sheet->cir_drawTelomere(true);
+		if(!linear)
+		{
+			sheet->cir_skipTelomere(true);
+		}
 	}
 
 	// draw blocks
@@ -145,23 +156,53 @@ void chromosome::draw(canvas *sheet, colorPalette palette, bool linear)
 			(*it)->drawCircular(sheet, palette, (*it)->getName());
 		}
 	}
-
+	
 	// draw south telomere
-	if(linear)
-	{	
-		sheet->lin_drawTelomere(false);
+	if(getBegin() == 0)
+	{
+		if(linear)
+		{	
+			sheet->lin_drawTelomere(false);
+		}
+		else
+		{
+			sheet->cir_drawTelomere(false);
+		}
 	}
 	else
 	{
-		sheet->cir_drawTelomere(false);
+		if(!linear)
+		{
+			sheet->cir_skipTelomere(false);
+		}
 	}
 
+	
 	// draw chromosom name - circular
 	if(!linear)
 	{
 		sheet->cir_drawChromosomeName(getName());
 	}
 
+	// draw marks
+	for(list<chromosomeSign*>::iterator it=signs.begin(); it != signs.end(); it++)
+	{
+		if(linear)
+		{	
+			sheet->lin_initForMarks();
+		}
+		if(linear)
+		{
+			(*it)->drawLinear(sheet, palette, (*it)->getName());
+		}
+		else
+		{
+			sheet->cir_initForMarks();
+			(*it)->drawCircular(sheet, palette, (*it)->getName());
+			sheet->cir_finisDrawMarksForChromosome();
+		}
+	}
+	
 }
 
 /**
@@ -279,7 +320,10 @@ int chromosome::checkChromosomeData()
 				blockExist = true;
 			}
 		}
-		len += (*it)->getEnd() - (*it)->getBegin();
+		if((*it)->getElementType() == chromosomeElement::Block)
+		{	// skipping centromere
+			len += (*it)->getEnd() - (*it)->getBegin();
+		}
 	}
 	if(((getEnd() - getBegin()) != len) && (!chr.empty()))
 	{
@@ -295,6 +339,51 @@ int chromosome::checkChromosomeData()
 		pushElement(block);
 	}
 	return 0;
+}
+
+/**
+* Add missing block to complete whole chromosome.
+*/
+void chromosome::addMissingBlocks()
+{
+	this->sortElements();
+	list<chromosomeElement*> tmpList;
+
+	int curentPos = this->getBegin();
+	for(list<chromosomeElement*>::iterator it=chr.begin(); it != chr.end(); it++)
+	{
+		if((*it)->getElementType() == chromosomeElement::Block)
+		{
+			if((*it)->getBegin() == curentPos)
+			{
+				curentPos = (*it)->getEnd();
+			}
+			else if((*it)->getBegin() > curentPos)
+			{
+				// insert blank block
+				chBlock *block = new chBlock();
+				block->setBegin(curentPos);
+				block->setEnd((*it)->getBegin());
+				tmpList.push_back(block);
+				curentPos=(*it)->getEnd();
+			}
+		}
+	}
+	if(curentPos < this->getEnd())
+	{
+		// insert blank block
+		chBlock *block = new chBlock();
+		block->setBegin(curentPos);
+		block->setEnd(this->getEnd());
+		tmpList.push_back(block);
+	}
+
+	// copy new items
+	for(list<chromosomeElement*>::iterator it=tmpList.begin(); it != tmpList.end(); it++)
+	{
+		pushElement(*it);
+	}
+	this->sortElements();
 }
 
 /**
@@ -408,3 +497,136 @@ void chromosome::sortElements()
 
 	chr.swap(tmp);
 }
+
+/**
+* Get lenght of north arm since centromere.
+* @return Lenght of arm.
+*/
+int chromosome::getNorthArmLenght()
+{
+	int len=0;
+	for(list<chromosomeElement*>::iterator it=chr.begin(); it != chr.end(); it++)
+	{
+		if((*it)->getElementType() == chromosomeElement::Centromere)
+		{
+			return len;
+		}
+		else
+		{
+			len += abs((*it)->getEnd() - (*it)->getBegin());
+		}
+	}
+	return len;
+}
+
+/**
+* Get lenght of south arm since centromere.
+* @return Lenght of arm.
+*/
+int chromosome::getSouthArmLenght()
+{
+	int len=0;
+	bool findCen=false; // true if centromere was crossed
+	for(list<chromosomeElement*>::iterator it=chr.begin(); it != chr.end(); it++)
+	{
+		if((*it)->getElementType() == chromosomeElement::Centromere)
+		{
+			findCen = true;
+		}
+		else
+		{
+			if(findCen)
+			{
+				len += abs((*it)->getEnd() - (*it)->getBegin());
+			}
+		}
+	}
+	return len;
+}
+
+/**
+* Methode set position of centromere into the marks in centromere.
+* Methode set location into the marks.
+*/
+void chromosome::addMarksInformation()
+{
+	for(list<chromosomeSign*>::iterator it=signs.begin(); it != signs.end(); it++)
+	{
+		if((*it)->getSignLocation() == canvas::LCentromere)
+		{// mark in centromere
+			(*it)->setBegin(getNorthArmLenght());
+		}
+		else if((*it)->getBegin() <= getNorthArmLenght())
+		{
+			(*it)->setSignLocation(canvas::LNorthArm);
+		}
+		else if(((*it)->getBegin() > getNorthArmLenght()) && ((*it)->getBegin() <= getChromosomLenght()))
+		{
+			(*it)->setSignLocation(canvas::LSouthArm);
+		}
+	}
+}
+
+
+///////////////////// MARKS ////////////////////////////////
+
+/**
+* Push chromosome sign to the list of chromosome signs.
+* @param sign Inserted chromosome sign.
+*/
+void chromosome::pushSign(chromosomeSign *sign)
+{
+	// check correct values
+	if((sign->getBegin() >= start) && (sign->getEnd() <= stop) && (sign->getBegin() <= sign->getEnd()))
+	{
+		signs.push_back(sign);
+	}
+}
+
+/** 
+* Get chromosome sign by alias.
+* @param sAlias Alias of sign.
+* @return Chromosome sign if does not exist return NULL.
+*/
+chromosomeSign* chromosome::getSign(string sAlias)
+{
+	for(list<chromosomeSign*>::iterator it = signs.begin(); it != signs.end(); it++)
+	{
+		chromosomeSign *c = *it;
+
+		if(c->getAlias().compare(sAlias) == 0)
+		{
+			return c;
+		}
+	}
+	return NULL;
+}
+
+
+/** 
+* Delete sign form list of chromosome signs.
+* @param sAlias Alias of deleted chromosome sign.
+*/
+void chromosome::popSign(string sAlias)
+{
+	signs.remove(getSign(sAlias));
+}
+	
+/**
+* Check if sign with input alias name is exist.
+* @param sAlias Alias name of checking sign.
+* @return True if the sign is exist and false if the sign is not exist.
+*/
+bool chromosome::isSignExist(string sAlias)
+{
+	if(getElement(sAlias) == NULL)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+

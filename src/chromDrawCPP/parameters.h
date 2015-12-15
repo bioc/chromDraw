@@ -9,6 +9,7 @@
 #define PARAMETERS_H_
 //#pragma once
 #include "getOpts.h"
+#include "parsing.h"
 
 #include <sys/types.h> // for stat().
 #include <sys/stat.h> // for stat().
@@ -18,7 +19,8 @@
 #include <iostream>
 
 
-
+#define DEFAULTDATAFORMAT "CHROMDRAW"	// default input data format
+#define BEDDATAFORMAT	"BED"	// input data in the BED data format
 
 
 using namespace std;
@@ -33,6 +35,7 @@ private:
 	string outputPath;	// path for saveing pictures
 	string colourPath;	// path to file with color setting
 	string inputMatrixPath;	//path to source file with matrix
+	string format;	// format of input data file
 	bool useScale; // use same scale for linar visualization
 
 public:
@@ -44,6 +47,8 @@ public:
 	string getColourPath();
 	void setInputMatrixPath(string path);
 	string getInputMatrixPath();
+	void setInputDataFormat(string format);
+	string getInputDataFormat();
 	void setUseScale(bool value);
 	bool getUseScale();
 

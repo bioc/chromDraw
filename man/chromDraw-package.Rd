@@ -5,16 +5,13 @@
 chromDraw - simple karyotype visualization tool.
 }
 \description{
-chromDraw is a simple package for drawing simple caryotype or comparing 
-karyotypes schemes. This tool has own input data format. Each chromosome 
-containing definition of blocks and centromere position. Output file formats are 
-*.eps and *.svg.
+ChromDraw is a R package for drawing the schemes of karyotype(s) in the linear and circular fashion. It is possible to visualized cytogenetic marsk on the chromosomes. This tool has own input data format. Input data can be imported from the GenomicRanges data structure. This package can visualized the data in the BED file format. Here is requirement on to the first nine fields of the BED format. Output files format are *.eps and *.svg.
 }
 \details{
 \tabular{ll}{
 Package: \tab chromDraw\cr
 Type: \tab Package\cr
-Date: \tab 2014-08-01\cr
+Date: \tab 2015-12-12\cr
 License: \tab GPL-3 \cr
 License: \tab LGPL | library Board \cr
 }

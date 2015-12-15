@@ -13,6 +13,7 @@
 */
 karyotype::karyotype(void)
 {
+	internalAliasMark=1;
 }
 
 /**
@@ -144,7 +145,7 @@ bool karyotype::isChromosomeExist(string sAlias)
 /**
 * Load karyotype information from file.
 * @param inputFile Opened input file.
-* @return If all load succes return 0 else return -1.
+* @return If all loads succes return 0 else return -1.
 */
 int karyotype::loadMatrix(ifstream *inputFile)
 {
@@ -277,7 +278,7 @@ int karyotype::loadMatrix(ifstream *inputFile)
 
 			}
 			else
-			{
+			{   // bad count of lexeme
 				for(list<string>::iterator it = lineLexemes.begin(); it != lineLexemes.end(); it++)
 				{
 				  cout << *it << " ";
@@ -302,6 +303,8 @@ int karyotype::loadMatrix(ifstream *inputFile)
 
 			
 				chromosome *chr = getChromosome(*it);
+				centromere->setBegin(chr->getBegin());
+				centromere->setEnd(chr->getEnd());
 				if(chr != NULL)
 				{
 					chr->pushElement(centromere);
@@ -348,11 +351,106 @@ int karyotype::loadMatrix(ifstream *inputFile)
 		else if(parsing::stringToUpper(lineLexemes.front())[0] == COMMENT)
 		{
 		}
+
+		// MARKS
+		else if(parsing::stringToUpper(lineLexemes.front()).compare(MARK) == 0)
+		{
+			if((lineLexemes.size() == FISHITEMSCOUNT) || (lineLexemes.size() == FISHITEMSCOUNT+1))
+			{
+				list<string>::iterator it = lineLexemes.begin();
+				it++;
+				markSign *mark = new markSign();
+				string aliasOfChromosome;
+
+				mark->setName(*it++); // set visible name of fish
+				
+				// set shape of mark
+				if(parsing::stringToUpper(*it).compare(RECTANGLE) == 0)
+				{
+					mark->setShape(markSign::SRectangle);
+				}
+				else if(parsing::stringToUpper(*it).compare(ELLIPSE) == 0)
+				{
+					mark->setShape(markSign::SEllipse);
+				}
+				it++;
+				// set size of mark
+				istringstream s0(*it++);
+				int value;
+				s0 >> value;
+				mark->setSize(value);
+
+				// set chromosome alias
+				aliasOfChromosome = *it++;
+
+				// set position of mark
+				if(parsing::stringToUpper(*it).compare(CENTROMERE) == 0)
+				{	// set position in to the centromere
+					mark->setSignLocation(canvas::LCentromere);
+				}
+				else
+				{
+					istringstream s0(*it);
+					s0 >> value;
+					mark->setBegin(value);
+					mark->setEnd(value);
+					// location will be calculated after load all data
+				}
+				it++;
+
+				// set color of mark
+				if(lineLexemes.size() == FISHITEMSCOUNT+1)
+				{
+					mark->setColorName(*it);
+				}
+				// set alias for mark
+				mark->setAlias(this->getInternalMarkAlias());
+
+				// add mark into the list of defined chromosome
+				chromosome *chr = getChromosome(aliasOfChromosome);
+
+				if(chr != NULL) 
+				{
+					if(! chr->isSignExist(mark->getAlias()))
+					{
+						chr->pushSign(mark);
+					}
+					else
+					{
+						cout << "Mark with internal alias: "  << mark->getAlias() << " is allready exists." << endl;
+						delete mark;
+						throw(313);
+						return -1;
+					}
+				}
+				else
+				{
+					cout << "Chromosome with internal alias: "  << aliasOfChromosome << " does not exist." << endl;
+					delete mark;
+					throw(306);
+					return -1;
+				}
+			}
+			else
+			{	// bad count of lexeme
+				for(list<string>::iterator it = lineLexemes.begin(); it != lineLexemes.end(); it++)
+				{
+				  cout << *it << " ";
+				}
+				cout << endl;
+				throw(312);
+				return -1;
+			}
+
+		}
+
+		// nothing to loading
 		else
 		{
-			// check chromosomes
+			// check chromosomes and complete missing blocks
 			for(list<chromosome*>::iterator it=katype.begin(); it != katype.end(); it++)
 			{
+				(*it)->addMissingBlocks();
 				if((*it)->checkChromosomeData() != 0)
 				{
 					// incompatibile count of bases
@@ -370,6 +468,12 @@ int karyotype::loadMatrix(ifstream *inputFile)
 	
 	// sort blocks in this karyotype
 	sortBlocks();
+	// calculate new information from data
+	calculateNewData();
+
+//TODO pridat funkci pro doplneni chybejich bloku - pridat bile bloky bez textu
+	// recalculate positions and add new necessary positions 
+
 
 	return 0;
 }
@@ -397,6 +501,7 @@ void karyotype::draw(canvas *sheet, colorPalette palette, bool linear)
 		centromereCount += (*it)->getCentromereCount();
 	}
 
+	// initialization of canvas
 	if(linear)
 	{
 		if(!sheet->lin_isInit())
@@ -500,6 +605,18 @@ int karyotype::getChromosomeCount()
 	return katype.size();
 }
 
+/**
+* Add missing block to complete chromosomes.
+*/
+void karyotype::addMissingBlocks()
+{
+	for(list<chromosome*>::iterator it = katype.begin(); it != katype.end(); it++)
+	{
+		(*it)->addMissingBlocks();
+	}
+}
+
+
 //-----------------PRIVATE-------------------
 /**
 * Methode for sort blocks in all chromosomes.
@@ -510,6 +627,39 @@ void karyotype::sortBlocks()
 	{
 		//sort chromosome elements
 		(*it)->sortElements();
+	}
+}
+
+/**
+* Increas value of unic internal alias for marks.
+*/
+void karyotype::incrementInternalMarkAlias()
+{
+	internalAliasMark++;
+}
+
+/**
+* Get string of unic internal alias for marks and generate new value.
+* @return String of alias.
+*/
+string karyotype::getInternalMarkAlias()
+{
+	ostringstream s;
+	s << internalAliasMark;
+	internalAliasMark++;
+	return s.str();
+}
+
+/**
+* Calculate new information and data.
+* Set position of centromere in marks which located into the centromere.
+*/
+void karyotype::calculateNewData()
+{
+
+	for(list<chromosome*>::iterator it = katype.begin(); it != katype.end(); it++)
+	{
+		(*it)->addMarksInformation();
 	}
 }
 

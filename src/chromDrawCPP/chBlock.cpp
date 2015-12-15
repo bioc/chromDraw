@@ -13,6 +13,7 @@
 chBlock::chBlock(void)
 {
 	this->setElementType(Block);
+	setColorName("white");
 }
 
 /**
@@ -22,6 +23,7 @@ chBlock::chBlock(void)
 chBlock::chBlock(EChromosomeElementType t)
 {
 	this->setElementType(t);
+	setColorName("white");
 }
 
 /**

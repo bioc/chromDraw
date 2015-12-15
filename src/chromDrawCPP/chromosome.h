@@ -16,6 +16,7 @@
 #include "chBlock.h"
 #include "canvas.h"
 #include "colorPalette.h"
+#include "markSign.h"
 
 using namespace std;
 
@@ -31,6 +32,7 @@ class chromosome
 		int start;		// start position of chromosome
 		int stop;		// stop position of chromosome
 		list<chromosomeElement*> chr;	// chromosome elements
+		list<chromosomeSign*> signs;	// chromosome signs
 
 	public:
 		void draw(canvas *sheet, colorPalette palette, bool linear);
@@ -42,6 +44,7 @@ class chromosome
 		int getBegin();
 		void setEnd(int i);
 		int getEnd();
+		// elements
 		void pushElement(chromosomeElement *element);
 		chromosomeElement* getElement(string sAlias);
 		void popElement(string sAlias);
@@ -49,8 +52,17 @@ class chromosome
 		int getChromosomLenght();
 		int getCentromereCount();
 		int checkChromosomeData();
+		void addMissingBlocks();
 		int getMaxStringLenghtBlock();
 		void sortElements();
+		int getNorthArmLenght();
+		int getSouthArmLenght();
+		// marks
+		void addMarksInformation();
+		void pushSign(chromosomeSign *mark);
+		chromosomeSign* getSign(string sAlias);
+		void popSign(string sAlias);
+		bool isSignExist(string sAlias);
 
 };
 

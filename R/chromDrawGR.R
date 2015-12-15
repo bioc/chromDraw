@@ -1,15 +1,15 @@
 #
 # Name: chromDrawGR.R
-# Description: Main controling function of chrDrawer using genomic ranges. Functions for converting input data to chromDraw data file.
+# Description: The main controling function of chromDraw, that uses genomic ranges. Function for converting input data to the chromDraw data file.
 # Author: Jan Janecka, ing  c 2014
 # Contact: jan.janecka@ceitec.muni.cz
 #
 
-#' Main chromDraw function. Thsic R function call main C++ function.
+#' Function chromDrawGR uses Genomic Ranges as input data format. This R function call the main C++ function.
 #' 
-#' @param karyotypes is vector of genomic ranges data strustures to defineing karytotypes.
-#' @param colors is data frame with colors definitions.
-#' @return return exit sate.
+#' @param karyotypes vector of the Genomic Ranges structures per karyotype.
+#' @param colors data frame definition of the coloros, containing color name and RGB of the color values.
+#' @return return exit state.
 chromDrawGR <- function(karyotypes, colors)
 {
   if(!missing(karyotypes))
@@ -31,7 +31,7 @@ chromDrawGR <- function(karyotypes, colors)
    
 }
 
-#converting data frame with colors to chromDraw color file.
+#converting data frame with colors to the chromDraw color file.
 convertInputColors <- function(colors)
 {
   fileConn <- file("colors.txt") #open file
@@ -56,7 +56,7 @@ convertInputColors <- function(colors)
   close(fileConn); # close file
 }
 
-#converting vector of genomic ranges to cromDraw karyotype defitnitions. 
+#converting vector of genomic ranges to chromDraw karyotype defitnitions. 
 convertInputData <- function(karyotypes)
 {
   fileConn <- file("data.txt") #open file

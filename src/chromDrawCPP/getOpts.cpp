@@ -28,9 +28,10 @@ getOpts::~getOpts()
  * @param argc Count of input arguments.
  * @param argv Vector with input arguments strings.
  * @param optv Vector with arguments definitions.
+ * @param optvExpanded Vector with expanded arguments definitions.
  * @return Return actual argument, if there are no more arguments return end of file - EOF.
  */
-char getOpts::getOptions(int argc, char** argv, char* optv)
+char getOpts::getOptions(int argc, char** argv, char* optv, char** optvExpanded)
 {
 	char retval = EOF; // value for return 
 	int optcurent = 0; // curent index to optv vector
@@ -43,10 +44,22 @@ char getOpts::getOptions(int argc, char** argv, char* optv)
 
 	while(optv[optcurent] != '\0')
 	{
-		if((optv[optcurent] == argv[argcurent][1]) && (argv[argcurent][2] == '\0'))
+		char x = argv[argcurent][1];
+		char y = argv[argcurent][2];
+		char o = optv[optcurent];
+
+		if(((optv[optcurent] == argv[argcurent][1]) && (argv[argcurent][2] == '\0')) || (strcmp(optvExpanded[optcurent], argv[argcurent]) == 0))
 		{
-			// positive match argument with chars in operating vector - optv
-			retval = argv[argcurent][1];
+			if(argv[argcurent][1] == '-')
+			{
+				// positive match argument with chars in operating vector - optvExpanded
+				retval = argv[argcurent][2];
+			}
+			else
+			{
+				// positive match argument with chars in operating vector - optv
+				retval = argv[argcurent][1];
+			}
 			if(argcurent < argc-1)
 			{
 				if(argv[argcurent+1][0] != '-')

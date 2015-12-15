@@ -1,3 +1,4 @@
+#colors by Terezie Mandakova
 #AK1
 COLOR yellow 	    255   255   0
 #AK2
@@ -15,15 +16,16 @@ COLOR light_blue 	0 	  255	  255
 #AK8
 COLOR	pink 	      230   170	  160 
 
-COLOR Black       0     0     0 
-COLOR White       255   255   255
-COLOR Lime        0     255   0
-COLOR Cyan        0     255   255
-COLOR Magenta     255   0     255
-COLOR Silver      192   192   192
-COLOR Gray        128   128   128
-COLOR Maroon      128   0     0
-COLOR Olive       128   128   0
-COLOR Purple      128   0     128
-COLOR Teal        0     128   128
-COLOR Navy        0     0     128
+
+COLOR black       0     0     0 
+COLOR white       255   255   255
+COLOR lime        0     255   0
+COLOR cyan        0     255   255
+COLOR magenta     255   0     255
+COLOR silver      192   192   192
+COLOR gray        128   128   128
+COLOR maroon      128   0     0
+COLOR olive       128   128   0
+COLOR purple      128   0     128
+COLOR teal        0     128   128
+COLOR navy        0     0     128
