@@ -21,6 +21,8 @@
 #include "colorPalette.h"
 #include "parsing.h"
 #include "charsLenghts.h"
+#include "markSign.h"
+
 
 
 //definition key words for load imput matrix.
