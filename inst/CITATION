@@ -1,0 +1,13 @@
+citEntry(entry="article",
+         title = "chromDraw: an R package for visualization of linear and circular karyotypes",
+         author = personList( as.person("Jan Janečka" ),
+           as.person("Martin A Lysak" )),
+         year = 2015,
+         journal = "Chromosome Research",
+         volume = "",
+         issue = "",
+         doi = "10.1007/s10577-015-9513-5",
+         url = "http://link.springer.com/article/10.1007/s10577-015-9513-5",
+         textVersion = "Janečka J, Lysak MA. chromDraw: an R package for visualization of linear and circular karyotypes. Chromosome Research. 2015:1-7" 
+         )
+

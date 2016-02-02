@@ -15,4 +15,5 @@ Imports:
     Rcpp (>= 0.11.1),
     GenomicRanges (>= 1.17.46)
 LinkingTo: Rcpp
+URL: www.plantcytogenomics.org/chromDraw
    
