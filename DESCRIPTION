@@ -1,7 +1,7 @@
 Package: chromDraw
 Type: Package
 Title: chromDraw is a R package for drawing the schemes of karyotypes in the linear and circular fashion.
-Version: 2.9.0
+Version: 2.10.0
 Date: 2016-06-02
 Author: Jan Janecka, Ing., Mgr. CEITEC Masaryk University
 Maintainer: Jan Janecka <jan.janecka@ceitec.muni.cz>
